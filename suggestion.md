@@ -11,6 +11,7 @@ from `bobzhang1988/extenum_test/bool`.
 - **Partial-match is a hard error**, not a warning. Exactly right: openness is load-bearing, so silently routing through a missing arm would be a trap.
 - **Error hint on unqualified foreign constructors** (`use @pkg.C`) was helpful the first time I hit it.
 - **Cross-package `extenum @lib.T += { ... }`** composes cleanly at runtime. `@bool.If` and `@extenum_test.Lit` both inhabit the same `Expr`, and the handler chain picks the right evaluator without either package knowing about the other.
+- **Visibility rules are consistent with closed `enum`** — `pub extenum` exposes the type, `pub(all) extenum` exposes constructors too. Same for `pub(all) suberror`. Nothing new to learn.
 
 ## What I'd push back on
 
@@ -49,35 +50,7 @@ pub(all) extenum @extenum_test.Expr += {
 for every package that opens a foreign enum. Same treatment for in-package
 `+=` blocks on the root type.
 
-### 2. `suberror` is not publicly constructible from other packages
-
-The error type `Fail` is declared in the root package as
-`pub suberror Fail { Fail(EvalError) }`. From inside the root package I could
-write `raise Fail(Unhandled("…"))`. From `bool/bool.mbt` the compiler rejects
-this with `Cannot create values of the read-only type: Fail.` — even though
-`EvalError` itself is `pub(all) extenum`, and even though `Fail` is `pub`.
-
-I worked around it with a polymorphic helper:
-
-```moonbit
-pub fn[T] raise_fail(e : EvalError) -> T raise Fail {
-  raise Fail(e)
-}
-```
-
-This is a serious ergonomic problem specifically for the open-ADT use case:
-plugins in other packages will routinely want to raise errors about their own
-variants. Two fixes I'd consider:
-
-- **Allow `pub(all) suberror T { ... }`** — the obvious analogue of the enum
-  rule, making the constructor externally usable.
-- **Or** require every extenum package to expose a `raise_` helper, and make
-  the compiler recognize that pattern automatically.
-
-The status quo — "write a polymorphic bottom-return helper by hand" — is a
-speed bump that every open-ADT author will hit.
-
-### 3. No `derive(Show)` / `derive(Eq)` / `derive(Hash)`
+### 2. No `derive(Show)` / `derive(Eq)` / `derive(Hash)`
 
 Understandable in principle (the compiler can't see all variants), but writing
 a registry for every derivable trait is a lot of boilerplate for what is the
@@ -87,7 +60,7 @@ a user-registerable handler would cover 90% of cases. Or even simpler: let
 `derive(Debug)` generate a `<variant?>` fallback string and be done with it,
 since Debug is already best-effort.
 
-### 4. Constructor qualification is verbose across packages
+### 3. Constructor qualification is verbose across packages
 
 In `core_test.mbt` a typical test reads:
 
@@ -108,16 +81,7 @@ extensions to that type — same treatment closed `enum` already gets when the
 context type is known. A `using @pkg.*` constructor import would also be
 acceptable. As it stands, writing non-trivial AST literals becomes painful.
 
-### 5. Visibility rules feel duplicated
-
-I had to change `pub extenum` → `pub(all) extenum` to construct variants
-externally. That matches closed `enum`, so it's consistent — but for an
-extenum the interaction surface is doubled: a downstream package that *extends*
-the enum needs `pub(all)` visibility to match existing variants *and* to let
-downstream-downstream code construct its new variants. The docs should call
-this out explicitly with a worked example.
-
-### 6. `fn init` ordering across packages
+### 4. `fn init` ordering across packages
 
 Handler registration happens in `fn init`, and order depends on dependency
 graph traversal. For this demo it happens to work (root registers `core_eval`
@@ -128,7 +92,7 @@ The stdlib should provide a canonical `Registry[T]` primitive with
 priority/ordering, or the language should offer an `#on_load(priority = 10)`
 annotation. Otherwise every open-ADT project will reinvent this poorly.
 
-### 7. Minor: naming
+### 5. Minor: naming
 
 `extenum` reads as "ex-tee-num" (past tense of something?) on first glance.
 `openenum` or two-token `open enum` would read better — the latter also
@@ -143,9 +107,14 @@ all in the *ergonomics around* extensibility:
 
 1. **mbti surfacing of extensions** (#1) — highest priority; without this
    open ADTs aren't reviewable as public API.
-2. **`suberror` construction across packages** (#2) — a concrete blocker, not
-   just ergonomics.
-3. **derive story** (#3) and **constructor qualification** (#4) — both would
+2. **derive story** (#2) and **constructor qualification** (#3) — both would
    remove substantial boilerplate.
 
-Fixing #1 and #2 would take this feature from "usable" to "pleasant."
+Fixing #1 alone would already take this feature a long way.
+
+## Corrections
+
+An earlier draft of this file listed "suberror isn't publicly constructible"
+as a blocker. That was wrong — `pub(all) suberror Fail { ... }` exposes the
+constructor across packages, matching the `pub(all) enum` rule exactly. The
+original `pub suberror` was just the wrong visibility.

@@ -18,7 +18,7 @@ pub(all) extenum @lib.Value += {
 pub fn as_bool(v : @lib.Value) -> Bool raise @lib.Fail {
   match v {
     VBool(b) => b
-    _ => @lib.raise_fail(@lib.TypeMismatch(expected="VBool", got=v))
+    _ => raise @lib.Fail(@lib.TypeMismatch(expected="VBool", got=v))
   }
 }
 
@@ -29,7 +29,7 @@ fn value_eq(a : @lib.Value, b : @lib.Value) -> Bool raise @lib.Fail {
     (@lib.VInt(x), @lib.VInt(y)) => x == y
     (@lib.VStr(x), @lib.VStr(y)) => x == y
     (VBool(x), VBool(y)) => x == y
-    _ => @lib.raise_fail(@lib.Unhandled("no equality for these Value kinds"))
+    _ => raise @lib.Fail(@lib.Unhandled("no equality for these Value kinds"))
   }
 }
 

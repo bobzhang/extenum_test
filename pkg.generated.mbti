@@ -8,14 +8,12 @@ pub fn as_str(Value) -> String raise Fail
 
 pub fn eval(Expr) -> Value raise Fail
 
-pub fn[T] raise_fail(EvalError) -> T raise Fail
-
 pub fn register_eval((Expr) -> Value? raise Fail) -> Unit
 
 pub fn register_value_show((Value, &Logger) -> Bool) -> Unit
 
 // Errors
-pub suberror Fail {
+pub(all) suberror Fail {
   Fail(EvalError)
 }
 pub impl Show for Fail

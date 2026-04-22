@@ -150,11 +150,9 @@ test "type mismatches carry the offending Value" {
   (`partial_match`), not a warning — that's the whole point of openness.
 - Declaration visibility matters: `pub extenum T { ... }` lets downstream
   code *use* the type but not construct its variants; `pub(all)` is needed
-  for external constructor access, same as regular `enum`.
-- `pub suberror` is *not* externally constructible. A plugin in another
-  package raising a shared error has to go through a helper — this repo
-  exposes `raise_fail : EvalError -> T raise Fail` for exactly that reason.
-  See `suggestion.md`.
+  for external constructor access, same as regular `enum`. The same rule
+  applies to `suberror` — use `pub(all) suberror` if cross-package code
+  needs to raise it.
 
 ## Comparison notes
 

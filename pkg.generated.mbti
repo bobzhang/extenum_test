@@ -1,0 +1,44 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang1988/extenum_test"
+
+// Values
+pub fn as_bool(Value) -> Bool raise Fail
+
+pub fn as_int(Value) -> Int raise Fail
+
+pub fn as_str(Value) -> String raise Fail
+
+pub fn eval(Expr) -> Value raise Fail
+
+pub fn register_eval((Expr) -> Value? raise Fail) -> Unit
+
+pub fn register_value_show((Value, &Logger) -> Bool) -> Unit
+
+// Errors
+pub suberror Fail {
+  Fail(EvalError)
+}
+pub impl Show for Fail
+
+// Types and methods
+pub(all) extenum EvalError {
+  Unhandled(String)
+  TypeMismatch(expected~ : String, got~ : Value)
+}
+pub impl Show for EvalError
+
+pub(all) extenum Expr {
+  Lit(Int)
+  Add(Expr, Expr)
+  Mul(Expr, Expr)
+}
+
+pub(all) extenum Value {
+  VInt(Int)
+}
+pub impl Show for Value
+
+// Type aliases
+
+// Traits
+

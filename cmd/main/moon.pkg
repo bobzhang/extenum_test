@@ -1,0 +1,7 @@
+import {
+  "bobzhang1988/extenum_test" @lib,
+}
+
+options(
+  "is-main": true,
+)

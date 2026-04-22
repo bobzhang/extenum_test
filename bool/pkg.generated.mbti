@@ -1,0 +1,18 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang1988/extenum_test/bool"
+
+import {
+  "bobzhang1988/extenum_test",
+}
+
+// Values
+pub fn as_bool(@extenum_test.Value) -> Bool raise @extenum_test.Fail
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

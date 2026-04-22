@@ -23,8 +23,12 @@ test "string plugin: concat" {
 ///|
 test "bool plugin: conditional selects a string branch" {
   // if (2 == 2) then "yes" else "no"
-  let e : Expr = @extenum_test.If(
-    @extenum_test.Eq(@extenum_test.Lit(2), @extenum_test.Lit(2)),
+  //
+  // `If` and `Eq` now come from @bool (a sibling subpackage), while `Lit`
+  // and `Str` come from @extenum_test. The match in bool_eval happily sees
+  // all of them because they all inhabit the same open `Expr`.
+  let e : Expr = @bool.If(
+    @bool.Eq(@extenum_test.Lit(2), @extenum_test.Lit(2)),
     @extenum_test.Str("yes"),
     @extenum_test.Str("no"),
   )
@@ -33,8 +37,8 @@ test "bool plugin: conditional selects a string branch" {
 
 ///|
 test "plugins compose: if (1+1 == 2) then 10*10 else 0" {
-  let e : Expr = @extenum_test.If(
-    @extenum_test.Eq(
+  let e : Expr = @bool.If(
+    @bool.Eq(
       @extenum_test.Add(@extenum_test.Lit(1), @extenum_test.Lit(1)),
       @extenum_test.Lit(2),
     ),
@@ -59,6 +63,6 @@ test "type mismatch raises a structured error" {
 test "plugin variants print through the registered handler" {
   let v : Value = @extenum_test.VStr("hi")
   inspect(v, content="VStr(hi)")
-  let vb : Value = @extenum_test.VBool(true)
+  let vb : Value = @bool.VBool(true)
   inspect(vb, content="VBool(true)")
 }

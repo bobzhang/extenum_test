@@ -12,6 +12,7 @@ different file, or a different package) can add new variants.
 
 ```mbt nocheck
 // Declare an open enum: "extenum" instead of "enum".
+
 ///|
 pub(all) extenum Expr {
   Lit(Int)
@@ -63,14 +64,19 @@ Typical use cases:
 
 ## What this demo shows
 
-A tiny expression evaluator split across three files. All live in the same
-package for simplicity, but each block could be a separate package.
+A tiny expression evaluator split into **two packages** — the string plugin
+lives next to the core in the root package, while the boolean plugin lives in
+a sibling subpackage (`bool/`) to exercise cross-package extension.
 
-| File | Adds to `Expr` | Adds to `Value` |
+| Location | Adds to `Expr` | Adds to `Value` |
 | --- | --- | --- |
-| `core.mbt` | `Lit`, `Add`, `Mul` | `VInt` |
-| `plugin_string.mbt` | `Str`, `Concat` | `VStr` |
-| `plugin_bool.mbt` | `Bool`, `Eq`, `If` | `VBool` |
+| `core.mbt` (root) | `Lit`, `Add`, `Mul` | `VInt` |
+| `plugin_string.mbt` (root) | `Str`, `Concat` | `VStr` |
+| `bool/bool.mbt` (**separate package**) | `Bool`, `Eq`, `If` | `VBool` |
+
+Note that `bool/bool.mbt` writes `extenum @lib.Expr += { ... }` — it names the
+foreign type it's extending. Its own `fn init` registers handlers into the
+root package's registry at load time.
 
 The core defines **two runtime registries**:
 
@@ -88,7 +94,7 @@ arm in every match.
 ## Running it
 
 ```bash
-moon test                 # runs blackbox + whitebox tests (7 pass)
+moon test                 # 9 tests pass (blackbox + whitebox + README doctests)
 moon run cmd/main         # prints: VStr(yes: 12)
 ```
 
@@ -101,9 +107,12 @@ them together via the handler chain.
 
 ```mbt check
 ///|
-test "compose across three open-enum extensions" {
-  let e : @extenum_test.Expr = @extenum_test.If(
-    @extenum_test.Eq(
+test "compose across three open-enum extensions (two packages)" {
+  // `If`, `Eq` live in @bool (a subpackage).
+  // `Add`, `Lit`, `Concat`, `Str` live in @extenum_test (the root package).
+  // Both contribute variants to the same open `Expr`.
+  let e : @extenum_test.Expr = @bool.If(
+    @bool.Eq(
       @extenum_test.Add(@extenum_test.Lit(1), @extenum_test.Lit(1)),
       @extenum_test.Lit(2),
     ),
@@ -142,6 +151,10 @@ test "type mismatches carry the offending Value" {
 - Declaration visibility matters: `pub extenum T { ... }` lets downstream
   code *use* the type but not construct its variants; `pub(all)` is needed
   for external constructor access, same as regular `enum`.
+- `pub suberror` is *not* externally constructible. A plugin in another
+  package raising a shared error has to go through a helper — this repo
+  exposes `raise_fail : EvalError -> T raise Fail` for exactly that reason.
+  See `suggestion.md`.
 
 ## Comparison notes
 

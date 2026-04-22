@@ -2,12 +2,12 @@
 fn main {
   // if (1 + 1 == 2) then "yes: " ++ "12" else "no"
   //
-  // Every constructor below lives in the library package, but was declared
-  // across three separate files (core, string plugin, bool plugin). The
-  // evaluator and pretty-printer dispatch through runtime handler chains —
-  // that's what makes the enum *open*.
-  let e : @lib.Expr = @lib.If(
-    @lib.Eq(@lib.Add(@lib.Lit(1), @lib.Lit(1)), @lib.Lit(2)),
+  // Constructors cross two packages: `@lib` (core + string plugin) and
+  // `@bool` (the boolean plugin in its own package). The evaluator and
+  // pretty-printer only see an opaque `Expr`/`Value`; dispatch happens
+  // through runtime handler chains registered by each plugin's `init`.
+  let e : @lib.Expr = @bool.If(
+    @bool.Eq(@lib.Add(@lib.Lit(1), @lib.Lit(1)), @lib.Lit(2)),
     @lib.Concat(@lib.Str("yes: "), @lib.Str("\{3 * 4}")),
     @lib.Str("no"),
   )

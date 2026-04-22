@@ -33,6 +33,16 @@ pub suberror Fail {
   Fail(EvalError)
 }
 
+///|
+/// Construction helper: `suberror` types are "read-only" from outside the
+/// declaring package, so plugins in other packages can't write `Fail(err)`
+/// directly. Polymorphic return type lets this slot into any expression
+/// position. (Arguably the language should allow `pub(all) suberror` — see
+/// suggestion.md.)
+pub fn[T] raise_fail(e : EvalError) -> T raise Fail {
+  raise Fail(e)
+}
+
 // ─── eval handler chain ────────────────────────────────────────────────────
 
 ///|

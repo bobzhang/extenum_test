@@ -2,13 +2,13 @@
 package "bobzhang1988/extenum_test"
 
 // Values
-pub fn as_bool(Value) -> Bool raise Fail
-
 pub fn as_int(Value) -> Int raise Fail
 
 pub fn as_str(Value) -> String raise Fail
 
 pub fn eval(Expr) -> Value raise Fail
+
+pub fn[T] raise_fail(EvalError) -> T raise Fail
 
 pub fn register_eval((Expr) -> Value? raise Fail) -> Unit
 

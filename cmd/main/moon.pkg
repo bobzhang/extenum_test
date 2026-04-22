@@ -1,5 +1,6 @@
 import {
   "bobzhang1988/extenum_test" @lib,
+  "bobzhang1988/extenum_test/bool" @bool,
 }
 
 options(

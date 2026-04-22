@@ -1,0 +1,3 @@
+import {
+  "bobzhang1988/extenum_test" @lib,
+}

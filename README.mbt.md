@@ -137,8 +137,14 @@ test "type mismatches carry the offending Value" {
     @extenum_test.Str("oops"),
     @extenum_test.Lit(1),
   )
-  let r : Result[@extenum_test.Value, _] = try? @extenum_test.eval(bad)
-  inspect(r, content="Err(Fail(TypeMismatch(expected=VInt, got=VStr(oops))))")
+  let r : Result[@extenum_test.Value, _] = Ok(@extenum_test.eval(bad)) catch {
+    err => Err(err)
+  }
+  match r {
+    Err(err) =>
+      inspect(err, content="Fail(TypeMismatch(expected=VInt, got=VStr(oops)))")
+    Ok(_) => fail("expected a type mismatch")
+  }
 }
 ```
 

@@ -2,7 +2,7 @@
 package "bobzhang1988/extenum_test"
 
 // Values
-pub fn as_int(Value) -> Int raise Fail
+pub fn as_int(Value) -> Int32 raise Fail
 
 pub fn as_str(Value) -> String raise Fail
 
@@ -19,24 +19,36 @@ pub(all) suberror Fail {
 pub impl Show for Fail
 
 // Types and methods
-pub(all) extenum EvalError {
-  Unhandled(String)
-  TypeMismatch(expected~ : String, got~ : Value)
+pub extenum EvalError {
 }
 pub impl Show for EvalError
 
-pub(all) extenum Expr {
-  Lit(Int)
-  Add(Expr, Expr)
-  Mul(Expr, Expr)
+pub extenum Expr {
 }
 
-pub(all) extenum Value {
-  VInt(Int)
+pub extenum Value {
 }
 pub impl Show for Value
+
+// Extensible enum extensions
+pub(all) extenum EvalError += {
+  TypeMismatch(expected~ : String, got~ : Value)
+  Unhandled(String)
+}
+
+pub(all) extenum Expr += {
+  Add(Expr, Expr)
+  Concat(Expr, Expr)
+  Lit(Int32)
+  Mul(Expr, Expr)
+  Str(String)
+}
+
+pub(all) extenum Value += {
+  VInt(Int32)
+  VStr(String)
+}
 
 // Type aliases
 
 // Traits
-

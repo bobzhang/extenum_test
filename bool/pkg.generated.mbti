@@ -12,7 +12,17 @@ pub fn as_bool(@extenum_test.Value) -> Bool raise @extenum_test.Fail
 
 // Types and methods
 
+// Extensible enum extensions
+pub(all) extenum @extenum_test.Expr += {
+  Bool(Bool)
+  Eq(@extenum_test.Expr, @extenum_test.Expr)
+  If(@extenum_test.Expr, @extenum_test.Expr, @extenum_test.Expr)
+}
+
+pub(all) extenum @extenum_test.Value += {
+  VBool(Bool)
+}
+
 // Type aliases
 
 // Traits
-

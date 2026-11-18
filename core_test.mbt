@@ -52,8 +52,12 @@ test "plugins compose: if (1+1 == 2) then 10*10 else 0" {
 test "type mismatch raises a structured error" {
   // Add(Str("x"), Lit(1)) — Add expects ints on both sides.
   let e : Expr = @extenum_test.Add(@extenum_test.Str("x"), @extenum_test.Lit(1))
-  let r : Result[Value, _] = try? @extenum_test.eval(e)
-  inspect(r, content="Err(Fail(TypeMismatch(expected=VInt, got=VStr(x))))")
+  let r : Result[Value, _] = Ok(@extenum_test.eval(e)) catch { err => Err(err) }
+  match r {
+    Err(err) =>
+      inspect(err, content="Fail(TypeMismatch(expected=VInt, got=VStr(x)))")
+    Ok(_) => fail("expected a type mismatch")
+  }
 }
 
 ///|

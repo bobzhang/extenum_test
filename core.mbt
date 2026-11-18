@@ -7,8 +7,11 @@
 /// Because the set of variants is open, every `match` on an extenum must
 /// include a wildcard arm — the compiler cannot prove a fixed list is
 /// exhaustive. That wildcard is also where plugin dispatch lives.
-pub(all) extenum Expr {
-  Lit(Int)
+pub extenum Expr
+
+///|
+pub(all) extenum Expr += {
+  Lit(Int32)
   Add(Expr, Expr)
   Mul(Expr, Expr)
 }
@@ -16,14 +19,20 @@ pub(all) extenum Expr {
 ///|
 /// A `Value` is also open: plugins can add new value kinds (strings, bools,
 /// closures, ...) without touching this file.
-pub(all) extenum Value {
-  VInt(Int)
+pub extenum Value
+
+///|
+pub(all) extenum Value += {
+  VInt(Int32)
 }
 
 ///|
 /// A runtime error for the evaluator. Kept open so plugins can introduce
 /// their own error variants without editing this file.
-pub(all) extenum EvalError {
+pub extenum EvalError
+
+///|
+pub(all) extenum EvalError += {
   Unhandled(String)
   TypeMismatch(expected~ : String, got~ : Value)
 }
@@ -93,7 +102,7 @@ fn core_value_show(v : Value, logger : &Logger) -> Bool {
 }
 
 ///|
-pub impl Show for Value with output(self, logger) {
+pub impl Show for Value with fn output(self, logger) {
   for h in value_show_handlers {
     if h(self, logger) {
       return
@@ -107,7 +116,7 @@ pub impl Show for Value with output(self, logger) {
 ///|
 /// Project a `Value` to an `Int`, raising on mismatch. Because `Value` is
 /// open, the wildcard is required — and the resulting error is informative.
-pub fn as_int(v : Value) -> Int raise Fail {
+pub fn as_int(v : Value) -> Int32 raise Fail {
   match v {
     VInt(n) => n
     _ => raise Fail(TypeMismatch(expected="VInt", got=v))
@@ -115,7 +124,7 @@ pub fn as_int(v : Value) -> Int raise Fail {
 }
 
 ///|
-pub impl Show for EvalError with output(self, logger) {
+pub impl Show for EvalError with fn output(self, logger) {
   match self {
     Unhandled(msg) => logger.write_string("Unhandled(\{msg})")
     TypeMismatch(expected~, got~) =>
@@ -125,7 +134,7 @@ pub impl Show for EvalError with output(self, logger) {
 }
 
 ///|
-pub impl Show for Fail with output(self, logger) {
+pub impl Show for Fail with fn output(self, logger) {
   let Fail(e) = self
   logger.write_string("Fail(\{e})")
 }

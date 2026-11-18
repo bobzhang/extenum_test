@@ -14,8 +14,11 @@ different file, or a different package) can add new variants.
 // Declare an open enum: "extenum" instead of "enum".
 
 ///|
-pub(all) extenum Expr {
-  Lit(Int)
+pub extenum Expr
+
+///|
+pub(all) extenum Expr += {
+  Lit(Int32)
   Add(Expr, Expr)
 }
 
